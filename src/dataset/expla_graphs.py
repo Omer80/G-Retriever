@@ -54,13 +54,14 @@ class ExplaGraphsDataset(Dataset):
 
 if __name__ == '__main__':
     dataset = ExplaGraphsDataset()
-
+    print("This is the prompt:")
     print(dataset.prompt)
-
+    print("These are the items in dataset[0]:")
     data = dataset[0]
     for k, v in data.items():
         print(f'{k}: {v}')
-
+    print("This is the dataset.get_idx_split()")
     split_ids = dataset.get_idx_split()
     for k, v in split_ids.items():
         print(f'# {k}: {len(v)}')
+        print(v[1])

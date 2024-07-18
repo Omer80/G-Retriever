@@ -59,20 +59,49 @@ class WebQSPDataset(Dataset):
 
 
 def preprocess():
+    """
+    Preprocess the WebQSP dataset by loading the dataset, nodes, edges, graph files, and question embeddings.
+    This function performs the following steps:
+    1. Creates directories for cached descriptions and cached graphs if they do not exist.
+    2. Loads the WebQSP dataset using the Huggingface datasets package and concatenates train, validation, and test splits.
+    3. Loads precomputed question embeddings from the saved file.
+    4. Iterates over each graph in the dataset, checks if the graph is already processed, and if not:
+       a. Loads the graph, nodes, and edges from their respective files.
+       b. Retrieves subgraphs and descriptions via the `retrieval_via_pcst` function.
+       c. Saves the subgraph and description to their respective cached directories.
+
+    The function ensures that each graph in the dataset is processed and cached for efficient retrieval and further analysis.
+    """
+
+    # Create directories for cached descriptions and graphs if they do not exist
     os.makedirs(cached_desc, exist_ok=True)
     os.makedirs(cached_graph, exist_ok=True)
+
+    # Load the WebQSP dataset and concatenate train, validation, and test splits
     dataset = datasets.load_dataset("rmanluo/RoG-webqsp")
     dataset = datasets.concatenate_datasets([dataset['train'], dataset['validation'], dataset['test']])
 
+    # Load precomputed question embeddings
     q_embs = torch.load(f'{path}/q_embs.pt')
+
+    # Iterate over each graph in the dataset
     for index in tqdm(range(len(dataset))):
+        # Check if the graph is already processed and cached
         if os.path.exists(f'{cached_graph}/{index}.pt'):
             continue
+
+        # Load the graph, nodes, and edges from their respective files
         graph = torch.load(f'{path_graphs}/{index}.pt')
         nodes = pd.read_csv(f'{path_nodes}/{index}.csv')
         edges = pd.read_csv(f'{path_edges}/{index}.csv')
+
+        # Get the question embedding for the current graph
         q_emb = q_embs[index]
+
+        # Retrieve subgraph and description using the retrieval_via_pcst function
         subg, desc = retrieval_via_pcst(graph, q_emb, nodes, edges, topk=3, topk_e=5, cost_e=0.5)
+
+        # Save the retrieved subgraph and description to their respective cached directories
         torch.save(subg, f'{cached_graph}/{index}.pt')
         open(f'{cached_desc}/{index}.txt', 'w').write(desc)
 
