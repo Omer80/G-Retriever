@@ -6,15 +6,12 @@ from torch_geometric.data.data import Data
 
 def retrieval_via_pcst(graph, q_emb, textual_nodes, textual_edges, topk=3, topk_e=3, cost_e=0.5):
     """
-    Extracts a subgraph from the given graph based on the relevance of nodes and edges to a query embedding.
+    Extracts a subgraph from the given graph based on the relevance of nodes and edges to a query embedding using the Prize-Collecting Steiner Tree (PCST) algorithm.
 
-    This function uses the `pcst_fast` package to solve a Prize-Collecting Steiner Tree (PCST) problem.
-    It assigns prizes to nodes and edges based on their cosine similarity to the query embedding, then
-    extracts a subgraph that maximizes the total prize minus the costs of the edges.
+    This function assigns higher "prizes" to nodes and edges that exhibit a stronger relevance to the query, as determined by their cosine similarity to the query embedding. The objective is to identify a subgraph that optimizes the total prize of nodes and edges, minus the costs associated with the size of the subgraph.
 
     Args:
-        graph (Data): The input graph, a `torch_geometric.data.Data` object, containing node features (`x`),
-                      edge indices (`edge_index`), and edge features (`edge_attr`).
+        graph (Data): The input graph, a `torch_geometric.data.Data` object, containing node features (`x`), edge indices (`edge_index`), and edge features (`edge_attr`).
         q_emb (torch.Tensor): The embedding of the query, used to compute similarity with nodes and edges.
         textual_nodes (pd.DataFrame): DataFrame containing textual information about the nodes.
         textual_edges (pd.DataFrame): DataFrame containing textual information about the edges.
