@@ -64,3 +64,4 @@ output/
 wandb/
 
 .vscode/
+.DS_Store
